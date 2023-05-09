@@ -1,25 +1,26 @@
-import 'src/drift/todos.dart';
 import 'package:flutter/material.dart';
+
+import 'src/drift/todos.dart';
 
 void main() {
   final database = MyDatabase();
   //9
-  runApp(MyApp(database: database));  //変更
+  runApp(MyApp(database: database)); //変更
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({
     Key? key,
-    required this.database,  //追加
+    required this.database, //追加
   }) : super(key: key);
 
-  final MyDatabase database;  //追加
+  final MyDatabase database; //追加
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       //9
-      home: DriftSample(database: database),//変更
+      home: DriftSample(database: database), //変更
     );
   }
 }
@@ -27,10 +28,10 @@ class MyApp extends StatelessWidget {
 class DriftSample extends StatelessWidget {
   const DriftSample({
     Key? key,
-    required this.database,  //追加
+    required this.database, //追加
   }) : super(key: key);
 
-  final MyDatabase database;  //追加
+  final MyDatabase database; //追加
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class DriftSample extends StatelessWidget {
               //10
               //以下、Container()をStreamBuilder(...)に置き換え
               child: StreamBuilder(
-                stream: database.,
+                stream: database.watchEntries(),
                 builder:
                     (BuildContext context, AsyncSnapshot<List<Todo>> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -55,6 +56,11 @@ class DriftSample extends StatelessWidget {
                     itemBuilder: (context, index) => TextButton(
                       child: Text(snapshot.data![index].content),
                       onPressed: () async {
+                        //以下追加
+                        await database.updateTodo(
+                          snapshot.data![index],
+                          'updated',
+                        );
                       },
                     ),
                   );
@@ -70,6 +76,10 @@ class DriftSample extends StatelessWidget {
                     child: ElevatedButton(
                       child: const Text('Add'),
                       onPressed: () async {
+                        //以下追加
+                        await database.addTodo(
+                          'test test test',
+                        );
                       },
                     ),
                   ),
@@ -80,6 +90,12 @@ class DriftSample extends StatelessWidget {
                     child: ElevatedButton(
                       child: const Text('remove'),
                       onPressed: () async {
+                        //15
+                        //以下追加
+                        final list = await database.allTodoEntries;
+                        if (list.isNotEmpty) {
+                          await database.deleteTodo(list[list.length - 1]);
+                        }
                       },
                     ),
                   ),
